@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="">
+</head>
+
+<body>
+    <div>
+        <form id="myForm">
+            <label for="expenses">Choose Expenses</label>
+            <input type="number" value="" id="expenses" name="expenses">
+            <label for="description">Choose Description</label>
+            <input type="text" id="description" name="description">
+            <label for="category">Choose a Category</label>
+            <input list="categoryList" id="category" name="category">
+            <datalist id="categoryList">
+                <option value="Movie">
+                <option value="Food">
+                <option value="Gym">
+                <option value="Grocery">
+                <option value="Travel">
+                <option value="Play">
+                <option value="Other">
+            </datalist>
+            <input type="submit" value="Add">
+        </form>
+        <ul id="items" class="list-group"></ul>
+    </div>
+
+    <script>
+        var form = document.getElementById('myForm');
+        var itemList = document.getElementById('items');
+
+        window.addEventListener('load', () => {
+            if (localStorage.length > 0) {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const obj = JSON.parse(localStorage.getItem(key));
+                    const li = createListItem(`${obj.expenses} - ${obj.category} - ${obj.description}`);
+                    itemList.appendChild(li);
+                }
+            }
+        });
+
+        // Create list item
+        function createListItem(text) {
+            var li = document.createElement('li');
+            li.classList.add('list-group-item');
+            li.appendChild(document.createTextNode(text));
+            var delButton = document.createElement('input');
+            delButton.type = 'button';
+            delButton.value = 'Delete Expenses';
+            delButton.classList.add('btn', 'btn-danger', 'delete');
+            var editButton = document.createElement('input');
+            editButton.type = 'button';
+            editButton.value = 'Edit Expenses'
+            editButton.classList.add('btn', 'btn-primary', 'edit');
+            li.appendChild(delButton);
+            li.appendChild(editButton);
+            return li;
+        }
+
+        // Form Submit Event
+        form.addEventListener('submit', addItem);
+
+        // Delete event
+        itemList.addEventListener('click', remove);
+
+        // Event
+        function addItem(e) {
+            e.preventDefault();
+            //get input value
+            var expenses = document.getElementById('expenses').value;
+            var description = document.getElementById('description').value;
+            var category = document.getElementById('category').value;
+
+            let obj = {
+                expenses: expenses,
+                description: description,
+                category: category
+            };
+            localStorage.setItem(category, JSON.stringify(obj));
+
+            var li = createListItem(expenses + ' - ' + category + ' - ' + description);
+            itemList.appendChild(li);
+
+            // Reset form fields after adding item
+            form.reset();
+        }
+
+        function remove(event) {
+            if (event.target.classList.contains('delete')) {
+                var li = event.target.parentElement;
+                var cate = li.textContent.split(' - ')[1];
+                itemList.removeChild(li);
+                localStorage.removeItem(cate);
+            }
+        }
+
+        let expensesList = document.getElementById('items');
+
+        expensesList.addEventListener('click', editItem);
+
+        function editItem(event) {
+            if (event.target.classList.contains('edit')) {
+                var li = event.target.parentElement;
+                var expenses = li.textContent.split(' - ')[0].trim();
+                var category = li.textContent.split(' - ')[1].trim();
+                var description = li.textContent.split(' - ')[2].trim();
+
+                var formInputs = document.querySelectorAll('#myForm input');
+
+                formInputs[0].value = expenses;
+                formInputs[1].value = description;
+                formInputs[2].value = category;
+
+                itemList.removeChild(li);
+                localStorage.removeItem(category);
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>
